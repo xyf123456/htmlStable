@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="static/js/jquery-1.11.2.min.js"></script>
+    <link rel="stylesheet" href="static/css/base/bootstrap.min.css" type="text/css"/>
+    <link rel="stylesheet" href="static/assets/global/css/components.css" type="text/css"/>
+    <link rel="stylesheet" href="static/assets/admin/pages/css/login.css" type="text/css">
+</head>
+<body>
+<div class="content">
+    <h3 class="form-title">商品列表页面</h3>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>商品名称</th>
+                <th>商品图片</th>
+                <th>商品描述</th>
+                <th>商品价格</th>
+                <th>商品库存</th>
+                <th>商品销量</th>
+            </tr>
+            </thead>
+            <tbody id="container">
+
+            </tbody>
+        </table>
+    </div>
+    <div id="page"></div>
+</div>
+</body>
+<script type="text/javascript">
+    //    这里初步测试会出现ajax的跨域请求错误，因为这个html请求的域为本地文件，
+    // 而服务器对应的域名为:localhost,对于这种请求能够达到服务端，并且服务端也能正确的
+    //返回，但是Ajax认定他们俩的域不同，这种回调是不安全的，同时也不会到达ajax的success中，
+    // 需要服务端来处理ajax跨域请求。
+    //    定义全局商品数组信息
+    //    var g_itemList = [];
+    var page_cur; //当前页
+    var total_num, page_size, page_total_num;//总记录数,每页条数,总页数
+    function getData(page) { //获取当前页数据
+        $.ajax({
+            type: "GET",
+            contentType: "application/x-www-form-urlencoded",
+            url: "http://localhost:8090/item/listByPaged",
+            xhrFields: {withCredentials: true},//配合后端的@CrossOrigin(allowCredentials = "true",allowedHeaders = "*")，实现session共享
+            data: {
+                'page': page,
+            },
+            dataType: 'json',
+            success: function (data) {
+                console.log(data);
+                $("#container").html("");
+                total_num = data.data.total;//总记录数
+                page_size = data.data.pageSize;//每页数量
+                page_cur = page;//当前页
+                page_total_num = data.data.pages;//总页数
+                var list = data.data;
+                var tr = show(data.data.rows);
+                $("#container").append(tr);
+            },
+            complete: function () {
+                getPageBar();//js生成分页，可用程序代替
+            },
+            error: function () {
+                alert("数据异常,请检查是否json格式");
+            }
+        });
+    }
+
+
+    function show(obj) {
+        var str = "";
+        for (var i = 0; i < obj.length; i++) {
+            str += `<tr data-id="${obj[i].id}" class="itemDetail">
+                       <td>${obj[i].title}</td>
+                        <td><img style="width: 100px;height: auto;" src="${obj[i].imgUrl}"></td>
+                        <td>${obj[i].decription}</td>
+                        <td>${obj[i].price}</td>
+                        <td>${obj[i].stock}</td>
+                        <td>${obj[i].sales}</td>
+                   </tr>`;
+        }
+        return str;
+    }
+
+    function getPageBar() { //js生成分页
+        if (page_cur > page_total_num)
+            page_cur = page_total_num;//当前页大于最大页数
+        if (page_cur < 1)
+            page_cur = 1;//当前页小于1
+        page_str = "<span>共" + total_num + "条</span><span>" + page_cur + "/" + page_total_num + "</span>";
+        if (page_cur == 1) {//若是第一页
+            page_str += "<span>首页</span><span>上一页</span>";
+        } else {
+            page_str += "<span><a href='javascript:void(0)' data-page='1' class='pages'>首页</a></span><span><a href='javascript:void(0)' data-page='" + (page_cur - 1) + "' class='pages'>上一页</a></span>";
+        }
+        if (page_cur >= page_total_num) {//若是最后页
+            page_str += "<span>下一页</span><span>尾页</span>";
+        } else {
+            page_str += "<span><a href='javascript:void(0)' data-page='" + (parseInt(page_cur) + 1) + "' class='pages'>下一页</a></span><span><a href='javascript:void(0)' data-page='" + page_total_num + "' class='pages'>尾页</a></span>";
+        }
+        $("#page").html(page_str);
+    }
+
+    $(function () {
+        getData(1, "", "", "");//默认第一页
+        $("body").delegate(".pages", "click", function () {
+//            var bookName = $("#bookName").val();
+            var page = $(this).attr("data-page");//获取当前页
+//             alert(page)
+            // alert(bookName)
+            getData(page, "", "", "");
+            return false;
+        });
+    });
+
+    //增加每个商品的点击事件,通过事件委托，因为<tr>是在js中循环生成的列表，将<tr>绑定给已经在这个js执行之前
+    //    已经生成的真实的DOM元素，才能进行相应的点击等事件
+    $("#container").delegate(".itemDetail","click", function (e) {
+        window.location.href = "item.html?id=" + $(this).data("id");
+    });
+    /*jQuery(document).ready(function () {
+        $.ajax({
+            type: "POST",
+            contentType: "application/x-www-form-urlencoded",
+            url: "http://localhost:8090/item/list",
+            xhrFields: {withCredentials: true},//配合后端的@CrossOrigin(allowCredentials = "true",allowedHeaders = "*")，实现session共享
+            success: function (data) {
+                console.log(data);
+                if (data.status == "success") {
+                    g_itemList = data.data;
+                    //重新加载Dom元素
+                    reloadDom();
+                } else {
+                    alert("获取商品信息失败，原因为：" + data.data.errMsg);
+                }
+            },
+            error: function (data) {
+                alert("获取商品信息失败，原因为：" + data.data.errMsg);
+            }
+        });
+    });
+    function reloadDom() {
+        for (var i = 0; i < g_itemList.length; i++) {
+            var itemVO = g_itemList[i];
+//            data-id
+            var dom = "<tr data-id='"+itemVO.id+"' class='itemDetail'>" + itemVO.id + "<td>" + itemVO.title + "</td><td><img style='width: 100px;height: auto;' src='" + itemVO.imgUrl + "'/></td><td>" + itemVO.decription + "</td><td>" +
+                itemVO.price + "</td><td>" + itemVO.stock + "</td><td>" + itemVO.sales + "</td></tr>";
+            //将遍历的内容增加到container中
+            $("#container").append($(dom));
+        }
+    }
+    //增加每个商品的点击事件,通过事件委托，因为<tr>是在js中循环生成的列表，将<tr>绑定给已经在这个js执行之前
+//    已经生成的真实的DOM元素，才能进行相应的点击等事件
+    $("#container").delegate(".itemDetail","click", function (e) {
+        window.location.href = "item.html?id=" + $(this).data("id");
+    });*/
+</script>
