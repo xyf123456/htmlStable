@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="static/css/base/bootstrap.min.css" type="text/css"/>
     <link rel="stylesheet" href="static/assets/global/css/components.css" type="text/css"/>
     <link rel="stylesheet" href="static/assets/admin/pages/css/login.css" type="text/css">
+    <script src="./gethost.js"></script>
 </head>
 <body class="login">
 <div class="content">
@@ -44,18 +45,18 @@
         $("#login").on("click", function () {
             var telphone = $("#telphone").val();
             var password = $("#password").val();
-            if (telphone == null || telphone == "") {
+            if (telphone == null || telphone === "") {
                 alert("手机号不能为空");
                 return false;
             }
-            if (password == null || password == "") {
+            if (password == null || password === "") {
                 alert("密码不能为空");
                 return false;
             }
             $.ajax({
                 type: "POST",
                 contentType: "application/x-www-form-urlencoded",
-                url: "http://localhost:8090/user/login",
+                url: "http://"+g_host+"/user/login",
                 data: {
                     "telphone": telphone,
                     "password": password
@@ -63,7 +64,7 @@
                 xhrFields: {withCredentials: true},//配合后端的@CrossOrigin(allowCredentials = "true",allowedHeaders = "*")，实现session共享
                 success: function (data) {
                     console.log(data);
-                    if (data.status == "success") {
+                    if (data.status === "success") {
                         alert("登录成功！");
                         window.location.href="itemList1.html";
                     } else {

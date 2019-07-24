@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="static/css/base/bootstrap.min.css" type="text/css"/>
     <link rel="stylesheet" href="static/assets/global/css/components.css" type="text/css"/>
     <link rel="stylesheet" href="static/assets/admin/pages/css/login.css" type="text/css">
+    <script src="./gethost.js"></script>
 </head>
 <body class="login">
 <div class="content">
@@ -113,7 +114,7 @@
             $.ajax({
                 type: "GET",
                 contentType: "application/x-www-form-urlencoded",
-                url: "http://localhost:8090/item/getItem",
+                url: "http://"+g_host+"/item/getItem",
                 data: {
 //                    "id": getParam("id"),//第一种
                     "id": getQueryString("id"),//第二种
@@ -141,7 +142,7 @@
             $.ajax({
                 type: "POST",
                 contentType: "application/x-www-form-urlencoded",
-                url: "http://localhost:8090/order/createOrder",
+                url: "http://"+g_host+"/order/createOrder",
                 data: {
                     "itemId": g_itemVO.id,
                     "amount": 1,

@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="static/css/base/bootstrap.min.css" type="text/css"/>
     <link rel="stylesheet" href="static/assets/global/css/components.css" type="text/css"/>
     <link rel="stylesheet" href="static/assets/admin/pages/css/login.css" type="text/css">
+    <script src="./gethost.js"></script>
 </head>
 <body>
 <div class="content">
@@ -44,7 +45,7 @@
         $.ajax({
             type: "GET",
             contentType: "application/x-www-form-urlencoded",
-            url: "http://localhost:8090/item/listByPaged",
+            url: "http://"+g_host+"/item/listByPaged",
             xhrFields: {withCredentials: true},//配合后端的@CrossOrigin(allowCredentials = "true",allowedHeaders = "*")，实现session共享
             data: {
                 'page': page,
