@@ -47,7 +47,7 @@
             xhrFields: {withCredentials: true},//配合后端的@CrossOrigin(allowCredentials = "true",allowedHeaders = "*")，实现session共享
             success: function (data) {
                 console.log(data);
-                if (data.status == "success") {
+                if (data.status === "success") {
                     g_itemList = data.data;
                     //重新加载Dom元素
                     reloadDom();
